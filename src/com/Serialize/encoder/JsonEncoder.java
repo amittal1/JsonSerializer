@@ -37,7 +37,7 @@ public class JsonEncoder {
 	//Public Method called by user
 	public static String serializeToJson(Object obj) {
 		// TODO Auto-generated method stub
-		return defaultProcessor(obj);
+		return toJson(defaultProcessor(obj));
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -78,7 +78,7 @@ public class JsonEncoder {
 			result = encodeObject(obj);
 		}
 		
-		return toJson(result);
+		return result;
 	}
 	
 	
