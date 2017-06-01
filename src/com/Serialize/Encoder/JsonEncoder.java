@@ -4,32 +4,54 @@ package com.Serialize.Encoder;
 /**
  * Author: Ankit Luv Mittal
  * Created: 05/31/2017
- * Description: Encode any objecct to json
+ * Description: Encode any object to json
+ * Dependency:Libraries
+ * 				1. Gson Library: Provided by google for converting objects to json
  */
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.lang.model.type.PrimitiveType;
+
 import com.Serialize.Interface.Serializable;
+import com.google.gson.Gson;
 
 public class JsonEncoder {
-	Map <String, List<Object>> classRegistry;
+	static private Map <String, Field []> classRegistry;
+	static private Gson gson =  new Gson();
 	
-	private String toJson(Object obj) {
+	private static String toJson(Object obj) {
 		// TODO Auto-generated method stub
-
+		
 		return "";
 	}
 
-	@SuppressWarnings("rawtypes")
-	private Map<String, Object> parseFields(Object obj) {
+	public static String defaultProcessor(Object obj) {
 		// TODO Auto-generated method stub
-		Class c = obj.getClass();
-		Field [] f = c.getDeclaredFields();
+		if(obj instanceof PrimitiveType){
+			return toJson(String.valueOf(obj));
+		}
+		return "";
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private static Map<String, Object> serializedFieldsUsingReflection(Object obj) {
+		// TODO Auto-generated method stub
+		Field [] fields;
+		if(classRegistry.containsKey(obj.getClass().getName())){
+			fields= classRegistry.get(obj.getClass().getName());
+		}
+		else{
+			Class c = obj.getClass();
+			fields = c.getDeclaredFields();
+		}
 		Map<String, Object> map = new HashMap<>();
 		
-		for(Field d: f){
+		for(Field d: fields){
 			d.setAccessible(true);
 			try {
 				map.put(d.getName(), d.get(obj));
@@ -39,11 +61,10 @@ public class JsonEncoder {
 				map.put("exception", e);
 			}
 		}
-		
 		return map;
 	}
 	
-	public String encodeObject(Object obj) {
+	public static String encodeObject(Object obj) {
 		Object result = null;
 
 		if(obj == null){
@@ -53,15 +74,31 @@ public class JsonEncoder {
 		if(obj instanceof Serializable){
 			result = ((Serializable) obj).prepareJSON();
 		}
-		if(obj){
-			fields = parseFields(obj);
+		else if(implementToString(obj)){
+			result = obj.toString();
 		}
-		fields.forEach((k,v) -> {
-			v=toJson(v);
-		});
+		else{
+			result = JsonEncoder.serializedFieldsUsingReflection(obj);
+		}
 		
-		
-		
-		return "";
+		return toJson(result);
+	}
+
+	private static boolean implementToString(Object obj) {
+		// TODO Auto-generated method stub
+		Method method;
+		try {
+			method = obj.getClass().getDeclaredMethod("toString", null);
+		} catch (NoSuchMethodException | SecurityException e) {
+			// TODO Auto-generated catch block
+			return false;
+		}
+		return true;
+	}
+	
+	
+	public static void main(String[] args) {
+		JsonEncoder jsonEncoder =  new JsonEncoder();
+		System.out.println(JsonEncoder.implementToString(jsonEncoder));
 	}
 }
