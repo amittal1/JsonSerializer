@@ -1,7 +1,12 @@
 package com.test.encoder;
 
+/**
+ * Author: Ankit Luv Mittal
+ * Created: 05/31/2017
+ * Description: Testing Serialize Project
+ */
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
