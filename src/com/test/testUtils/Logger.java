@@ -1,4 +1,4 @@
-package com.test.encoder;
+package com.test.testUtils;
 
 /**
  * Author: Ankit Luv Mittal

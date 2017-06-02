@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.ib.client.CommissionReport;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
-import com.test.encoder.Logger;
 
 public class JsonEncoder {
 	static private Map <String, Field []> classRegistry;
@@ -82,9 +81,9 @@ public class JsonEncoder {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static String defaultProcessor(Object obj) {
+	private static Object defaultProcessor(Object obj) {
 		// TODO Auto-generated method stub
-		String result="";
+		Object result="";
 		if(obj == null){
 			return null;
 		}
@@ -111,7 +110,7 @@ public class JsonEncoder {
 					((Collection) temp_result).add(defaultProcessor(value));
 				});
 			}
-			result = temp_result.toString();
+			result = temp_result;
 		}
 		else{
 			result = encodeObject(obj);
@@ -133,7 +132,7 @@ public class JsonEncoder {
 		return false;
 	}
 
-	private static String encodeObject(Object obj) {
+	private static Object encodeObject(Object obj) {
 		Object result = null;
 
 		if(obj == null){
@@ -143,9 +142,9 @@ public class JsonEncoder {
 		if(obj instanceof JsonSerializable){
 			result = ((JsonSerializable) obj).prepareJSON();
 		}
-		else if(implements_toString(obj)){
+		/*else if(implements_toString(obj)){
 			result = obj.toString();
-		}
+		}*/
 		else{
 			result = JsonEncoder.serializedFieldsUsingReflection(obj);
 		}
@@ -172,7 +171,6 @@ public class JsonEncoder {
 		// TODO Auto-generated method stub
 		Field [] fields;
 		if(classRegistry.containsKey(obj.getClass().getName())){
-			Logger.log(Logger.getMethodTrace()+" From classRegistry");
 			fields= classRegistry.get(obj.getClass().getName());
 		}
 		else{
@@ -181,20 +179,15 @@ public class JsonEncoder {
 		Map<String, Object> map = new HashMap<>();
 		
 		for(Field d: fields){
-			Logger.log(Logger.getMethodTrace()+" From for loop "+fields.length);
-			Logger.log("field: "+d.getName());
 			d.setAccessible(true);
 			try {
-				Logger.log(Logger.getMethodTrace()+" From try");
 				map.put(d.getName(), defaultProcessor(d.get(obj)));
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				// TODO Auto-generated catch block
-				Logger.log(Logger.getMethodTrace()+" From catcch");
 				e.printStackTrace();
-				map.put("exception", e);
+				map.put("exception in getting field: "+d.getName(), e);
 			}
 		}
-		Logger.log(Logger.getMethodTrace()+" From end ");
 		return map;
 	}
 	
