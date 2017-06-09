@@ -15,8 +15,6 @@ import java.util.Map;
 
 import com.Serialize.encoder.JsonEncoder;
 import com.google.gson.Gson;
-import com.ib.client.CommissionReport;
-import com.ib.client.OrderState;
 import com.test.testUtils.Message;
 
 public class EncoderTest {
@@ -38,7 +36,7 @@ public class EncoderTest {
 		}
 		System.out.println(e.map.toString());
 		System.out.println(JsonEncoder.serializeToJson(e));
-		System.out.println(gson.toJson(e));
+		System.out.println("gson json: "+gson.toJson(e));
 		System.out.println(gson.toJson(JsonEncoder.serializeToJson(e)));
 		
 		
@@ -71,8 +69,7 @@ public class EncoderTest {
 		
 		System.out.println(JsonEncoder.serializeToJson(cmm));
 		*/
-		/*
-		 * 		JsonEncoder.registerClass(CommissionReport.class, "m_execId", "m_commission", 
+				JsonEncoder.registerClass(CommissionReport.class, "m_execId", "m_commission", 
 				"m_currency","m_realizedPNL", "m_yield", "m_yieldRedemptionDate");
 		
 		CommissionReport cmm = new CommissionReport();
@@ -82,10 +79,10 @@ public class EncoderTest {
 		cmm.m_realizedPNL = 10.988;
 		cmm.m_yield = 1.1;
 		cmm.m_yieldRedemptionDate = 06012017;
-		
+		m.add("commissionReport",	cmm);
 		System.out.println(JsonEncoder.serializeToJson(cmm));
+		System.out.println(gson.toJson(cmm));
 
-		 */
 	}
 	
 }

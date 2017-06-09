@@ -31,25 +31,11 @@ public class JsonEncoder {
 	static{
 		classRegistry = new HashMap<>();
 		gson =  new Gson();
-		
-		//Registering CommissionReport class
-		registerClass(CommissionReport.class, "m_execId", "m_commission", 
-				"m_currency","m_realizedPNL", "m_yield", "m_yieldRedemptionDate");
-
-		//Registering OrderState class
-		registerClass(OrderState.class, "m_status",  "m_initMargin", 
-				"m_maintMargin", "m_equityWithLoan", "m_commission", "m_minCommission", 
-				"m_maxCommission", "m_commissionCurrency", "m_warningText");
-		
-		//Registering Order class
-		registerClass(Order.class, "m_clientId", "m_orderId", "m_permId", 
-					"m_parentId", "m_action", "m_totalQuantity", "m_displaySize", 
-					"m_orderType", "m_lmtPrice", "m_auxPrice", "m_tif", "m_account");
 	}
 	
 	//Register class in class registry
-	//returns true if registered correctly 
-	//false if any field is not found or already present in classRegistry
+	//returns true if registered correctly or already present in classRegistry
+	//false if any field is not found 
 	@SuppressWarnings("rawtypes")
 	public static boolean registerClass(Class c,  String ...fieldNames ) {
 
