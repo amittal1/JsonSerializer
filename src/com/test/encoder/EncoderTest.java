@@ -69,20 +69,7 @@ public class EncoderTest {
 		
 		System.out.println(JsonEncoder.serializeToJson(cmm));
 		*/
-				JsonEncoder.registerClass(CommissionReport.class, "m_execId", "m_commission", 
-				"m_currency","m_realizedPNL", "m_yield", "m_yieldRedemptionDate");
-		
-		CommissionReport cmm = new CommissionReport();
-		cmm.m_commission = 100;
-		cmm.m_currency = "10";
-		cmm.m_execId= "1";
-		cmm.m_realizedPNL = 10.988;
-		cmm.m_yield = 1.1;
-		cmm.m_yieldRedemptionDate = 06012017;
-		m.add("commissionReport",	cmm);
-		System.out.println(JsonEncoder.serializeToJson(cmm));
-		System.out.println(gson.toJson(cmm));
-
+	
 	}
 	
 }

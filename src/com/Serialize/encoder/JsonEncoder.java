@@ -16,13 +16,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.Serialize.Interface.JsonSerializable;
 import com.google.gson.Gson;
-import com.ib.client.CommissionReport;
-import com.ib.client.Order;
-import com.ib.client.OrderState;
 
 public class JsonEncoder {
 	static private Map <String, Field []> classRegistry;
@@ -45,7 +43,6 @@ public class JsonEncoder {
 			try {
 				fields[i] = c.getDeclaredField(fieldNames[i]);
 			} catch (NoSuchFieldException | SecurityException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			}
@@ -62,13 +59,11 @@ public class JsonEncoder {
 	
 	//Public Method called by user
 	public static String serializeToJson(Object obj) {
-		// TODO Auto-generated method stub
 		return toJson(defaultProcessor(obj));
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Object defaultProcessor(Object obj) {
-		// TODO Auto-generated method stub
 		Object result="";
 		if(obj == null){
 			return null;
@@ -76,16 +71,13 @@ public class JsonEncoder {
 		if(isPrimitiveOrWrapper(obj.getClass())){
 			result = String.valueOf(obj);
 		}
-		/*else if(obj instanceof String){
-			result = obj.toString();
-		}*/
 		else if(obj instanceof Collection || obj instanceof Map){
 			 
 			Object temp_result;
 			if(obj instanceof Map){
-					temp_result = new HashMap<>();
+					temp_result = new LinkedHashMap<>();
 				((Map) obj).forEach((k,v) -> {
-					//if key is not a string ignore it
+					//key in map should always be primitive/String, if not then its ignored
 					if(isPrimitiveOrWrapper(k.getClass()))
 						((Map) temp_result).put(k, defaultProcessor(v));
 				});
@@ -128,9 +120,6 @@ public class JsonEncoder {
 		if(obj instanceof JsonSerializable){
 			result = ((JsonSerializable) obj).prepareJSON();
 		}
-		/*else if(implements_toString(obj)){
-			result = obj.toString();
-		}*/
 		else{
 			result = JsonEncoder.serializedFieldsUsingReflection(obj);
 		}
@@ -138,11 +127,12 @@ public class JsonEncoder {
 		return defaultProcessor(result);
 	}
 
+	@Deprecated
 	private static boolean implements_toString(Object obj) {
 		// TODO Auto-generated method stub
 		Method method = null;
 		try {
-				method = obj.getClass().getDeclaredMethod("toString", null);
+				method = obj.getClass().getDeclaredMethod("toString");
 		} catch (NoSuchMethodException | SecurityException e) {
 			// TODO Auto-generated catch block
 			return false;
@@ -154,7 +144,6 @@ public class JsonEncoder {
 	}
 	
 	private static Map<String, Object> serializedFieldsUsingReflection(Object obj) {
-		// TODO Auto-generated method stub
 		Field [] fields;
 		if(classRegistry.containsKey(obj.getClass().getName())){
 			fields= classRegistry.get(obj.getClass().getName());
@@ -162,14 +151,13 @@ public class JsonEncoder {
 		else{
 			fields = getFields(obj.getClass());
 		}
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new LinkedHashMap<>();
 		
 		for(Field d: fields){
 			d.setAccessible(true);
 			try {
 				map.put(d.getName(), defaultProcessor(d.get(obj)));
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				map.put("exception in getting field: "+d.getName(), e);
 			}
@@ -178,7 +166,6 @@ public class JsonEncoder {
 	}
 	
 	private static String toJson(Object obj) {
-		// TODO Auto-generated method stub
 		return gson.toJson(obj);
 	}
 
