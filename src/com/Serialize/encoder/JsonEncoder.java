@@ -4,7 +4,10 @@ package com.Serialize.encoder;
 /**
  * Author: Ankit Luv Mittal
  * Created: 05/31/2017
+ * Modified: 06/23/2017
  * Description: Encode any object to json
+ * 				1. classRegistry is for specific classes which are registered with selected fields 
+ * 					into this project.
  * Dependency:Libraries
  * 				1. Gson Library: Provided by google for converting objects to json
  */
@@ -14,67 +17,81 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.lang.model.type.PrimitiveType;
 
 import com.Serialize.Interface.JsonSerializable;
 import com.google.gson.Gson;
-import com.test.encoder.Logger;
 
 public class JsonEncoder {
 	static private Map <String, Field []> classRegistry;
 	static private Gson gson;
-	private static int test =0;
 	
 	static{
 		classRegistry = new HashMap<>();
 		gson =  new Gson();
 	}
 	
+	//Register class in class registry
+	//returns true if registered correctly or already present in classRegistry
+	//false if any field is not found 
+	@SuppressWarnings("rawtypes")
+	public static boolean registerClass(Class c,  String ...fieldNames ) {
+
+		Field [] fields = new Field [fieldNames.length];
+		
+		for (int i = 0; i < fieldNames.length; i++) {
+			try {
+				fields[i] = c.getDeclaredField(fieldNames[i]);
+			} catch (NoSuchFieldException | SecurityException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		classRegistry.put(c.getName(), fields);
+		return true;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private static Field [] getFields(Class c){
+		return c.getDeclaredFields();
+	}
+	
 	
 	//Public Method called by user
 	public static String serializeToJson(Object obj) {
-		// TODO Auto-generated method stub
 		return toJson(defaultProcessor(obj));
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static String defaultProcessor(Object obj) {
-		// TODO Auto-generated method stub
-		String result="";
+	private static Object defaultProcessor(Object obj) {
+		Object result="";
 		if(obj == null){
 			return null;
 		}
 		if(isPrimitiveOrWrapper(obj.getClass())){
 			result = String.valueOf(obj);
 		}
-		else if(obj instanceof String){
-			result = obj.toString();
-		}
 		else if(obj instanceof Collection || obj instanceof Map){
-			Logger.debug(Logger.getMethodTrace() + " "+  test ++ +" "+  obj);
+			 
 			Object temp_result;
 			if(obj instanceof Map){
-				Logger.debug(Logger.getMethodTrace() + " "+ test ++ +" "+   obj);
-					temp_result = new HashMap<>();
+					temp_result = new LinkedHashMap<>();
 				((Map) obj).forEach((k,v) -> {
-					//if key is not a string ignore it
-					((Map) temp_result).put(defaultProcessor(k), defaultProcessor(v));
+					//key in map should always be primitive/String, if not then its ignored
+					if(isPrimitiveOrWrapper(k.getClass()))
+						((Map) temp_result).put(k, defaultProcessor(v));
 				});
 			}
 			else{
-				Logger.debug(Logger.getMethodTrace() + " "+ test ++ +" "+  obj);
 				temp_result = new ArrayList<>();
 				((Collection) obj).forEach((value)->{
 					((Collection) temp_result).add(defaultProcessor(value));
 				});
 			}
-			result = temp_result.toString();
+			result = temp_result;
 		}
 		else{
-			Logger.debug(Logger.getMethodTrace() + " "+ test ++ +" "+ obj);
 			result = encodeObject(obj);
 		}
 		
@@ -82,8 +99,9 @@ public class JsonEncoder {
 	}
 	
 	
+	@SuppressWarnings("rawtypes")
 	private static boolean isPrimitiveOrWrapper(Class type) {
-		if((type.isPrimitive() && type != void.class) ||
+		if((type.isPrimitive() && type != void.class) || type == String.class ||
 		        type == Double.class || type == Float.class || type == Long.class ||
 		        type == Integer.class || type == Short.class || type == Character.class ||
 		        type == Byte.class || type == Boolean.class || type == String.class){
@@ -93,7 +111,7 @@ public class JsonEncoder {
 		return false;
 	}
 
-	public static String encodeObject(Object obj) {
+	private static Object encodeObject(Object obj) {
 		Object result = null;
 
 		if(obj == null){
@@ -101,27 +119,21 @@ public class JsonEncoder {
 		}
 		
 		if(obj instanceof JsonSerializable){
-			Logger.debug(Logger.getMethodTrace() + " "+  test ++ +" checking interfaceImpl "+  obj);
 			result = ((JsonSerializable) obj).prepareJSON();
 		}
-		else if(implements_toString(obj)){
-			Logger.debug(Logger.getMethodTrace() + " "+  test ++ +" checking toString "+  obj);
-			result = obj.toString();
-		}
 		else{
-			Logger.debug(Logger.getMethodTrace() + " "+  test ++ +" all conditions false reflection use "+  obj);
 			result = JsonEncoder.serializedFieldsUsingReflection(obj);
-//			result = defaultProcessor(result);
 		}
 		
 		return defaultProcessor(result);
 	}
 
+	@Deprecated
 	private static boolean implements_toString(Object obj) {
 		// TODO Auto-generated method stub
 		Method method = null;
 		try {
-				method = obj.getClass().getDeclaredMethod("toString", null);
+				method = obj.getClass().getDeclaredMethod("toString");
 		} catch (NoSuchMethodException | SecurityException e) {
 			// TODO Auto-generated catch block
 			return false;
@@ -132,40 +144,30 @@ public class JsonEncoder {
 		return false;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private static Map<String, Object> serializedFieldsUsingReflection(Object obj) {
-		// TODO Auto-generated method stub
 		Field [] fields;
 		if(classRegistry.containsKey(obj.getClass().getName())){
 			fields= classRegistry.get(obj.getClass().getName());
 		}
 		else{
-			Class c = obj.getClass();
-			fields = c.getDeclaredFields();
+			fields = getFields(obj.getClass());
 		}
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new LinkedHashMap<>();
 		
 		for(Field d: fields){
 			d.setAccessible(true);
 			try {
-				map.put(d.getName(), encodeObject(d.get(obj)));
+				map.put(d.getName(), defaultProcessor(d.get(obj)));
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-				map.put("exception", e);
+				map.put("exception in getting field: "+d.getName(), e);
 			}
 		}
 		return map;
 	}
 	
 	private static String toJson(Object obj) {
-		// TODO Auto-generated method stub
 		return gson.toJson(obj);
 	}
 
-	
-	public static void main(String[] args) {
-		JsonEncoder jsonEncoder =  new JsonEncoder();
-		System.out.println(JsonEncoder.implements_toString(jsonEncoder));
-	}
 }
