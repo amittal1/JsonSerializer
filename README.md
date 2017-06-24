@@ -100,7 +100,7 @@ Its an open-source library to be used in cases such as:
 * If You face this "exception in getting field: FieldName" as one of the keys in your JSON Object, then it means you passed the wrong FieldName while registering the class with registerClass method. Correct it.
 
 ## CONTRIBUTE
-Contributions are always welcome! Please go back and read the [CONTRIBUTION.md] (https://github.com/amittal1/JsonSerializer/blob/master/CONTRIBUTION.md) guidelines first.
+Contributions are always welcome! Please go back and read the [CONTRIBUTION.md](https://github.com/amittal1/JsonSerializer/blob/master/CONTRIBUTION.md) guidelines first.
 
 
 ### Version 2.0
