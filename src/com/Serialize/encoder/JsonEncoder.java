@@ -4,6 +4,7 @@ package com.Serialize.encoder;
 /**
  * Author: Ankit Luv Mittal
  * Created: 05/31/2017
+ * Modified: 06/23/2017
  * Description: Encode any object to json
  * 				1. classRegistry is for specific classes which are registered with selected fields 
  * 					into this project.
